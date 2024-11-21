@@ -1,0 +1,216 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  static const appTitle = 'Drawer Demo';
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: appTitle,
+      home: const MyHomePage(title: appTitle),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _selectedIndex = 0;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    Text('Index 0: HOME'),
+    Text('Index 1: STATISTICS'),
+    Text('Index 2: GENERAL'),
+    Text('Index 3: SETTINGS'),
+    Text('Index 4: ABOUT US'),
+    SizedBox.shrink(),  // Placeholder for LOGOUT page
+  ];
+
+  void _onItemTapped(int index) {
+    if (index == 5) {
+      // When LOGOUT is clicked, navigate to the Logout page
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LogoutPage()),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+      Navigator.pop(context); // Close the drawer if it's any menu other than LOGOUT
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
+      ),
+      body: Center(
+        child: _widgetOptions[_selectedIndex],
+      ),
+      drawer: Drawer(
+        child: Container(
+          color: const Color(0xFF343A40),
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              // Profile Section
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, size: 50, color: Colors.white),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "JUAN DE LA CRUZ",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.white70),
+              // Menu Header
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  "MENU",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Menu Items
+              _buildMenuItem("HOME", Icons.home, 0),
+              _buildMenuItem("STATISTICS", Icons.bar_chart, 1),
+              const SizedBox(height: 10), // Gap after STATISTICS
+              const Divider(color: Colors.white70),
+              _buildMenuItem("GENERAL", Icons.settings, 2),
+              _buildMenuItem("SETTINGS", Icons.tune, 3),
+              _buildMenuItem("ABOUT US", Icons.info, 4),
+              _buildMenuItem("LOGOUT", Icons.logout, 5),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(String title, IconData icon, int index) {
+    return ListTile(
+      selected: _selectedIndex == index,
+      selectedTileColor: const Color(0xFF495057),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+      leading: Icon(icon, color: Colors.white),
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 16, color: Colors.white),
+      ),
+      onTap: () => _onItemTapped(index),
+    );
+  }
+}
+
+class LogoutPage extends StatelessWidget {
+  const LogoutPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter App!!',
+      theme: ThemeData(
+        colorSchemeSeed: Colors.indigo,
+        useMaterial3: true,
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        colorSchemeSeed: Colors.blue,
+        useMaterial3: true,
+        brightness: Brightness.dark,
+      ),
+      home: const LogoutHome(title: 'Flutter Example App'),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
+
+class LogoutHome extends StatefulWidget {
+  const LogoutHome({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<LogoutHome> createState() => _LogoutHomeState();
+}
+
+class _LogoutHomeState extends State<LogoutHome> {
+  int _counter = 0;
+
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'You have logged out. This page is just for demonstration.',
+            ),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
