@@ -32,13 +32,13 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Map<String, dynamic>> menuItems = [
     {"title": "HOME", "icon": Icons.home},
     {"title": "STATISTICS", "icon": Icons.bar_chart},
-    {"title": "GENERAL", "icon": Icons.settings},
-    {"title": "SETTINGS", "icon": Icons.tune},
+    {"title": "GENERAL"}, 
+    {"title": "SETTINGS", "icon": Icons.settings},
     {"title": "ABOUT US", "icon": Icons.info},
     {"title": "LOGOUT", "icon": Icons.logout},
   ];
 
-  // Body widgets corresponding to each drawer item
+  // Body widgets corresponding to each drawer item (excluding GENERAL)
   static const List<Widget> _widgetOptions = <Widget>[
     Text(
       'Index 0: HOME',
@@ -49,27 +49,26 @@ class _MyHomePageState extends State<MyHomePage> {
       style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
     ),
     Text(
-      'Index 2: GENERAL',
+      'Index 2: SETTINGS',
       style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
     ),
     Text(
-      'Index 3: SETTINGS',
+      'Index 3: ABOUT US',
       style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
     ),
     Text(
-      'Index 4: ABOUT US',
-      style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-    ),
-    Text(
-      'Index 5: LOGOUT',
+      'Index 4: LOGOUT',
       style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
     ),
   ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    // Do not update body for GENERAL (index 2 in the drawer, no body widget associated)
+    if (menuItems[index]["title"] != "GENERAL") {
+      setState(() {
+        _selectedIndex = index > 2 ? index - 1 : index; // Adjust index if beyond GENERAL
+      });
+    }
     Navigator.pop(context); // Close the drawer after selecting an item
   }
 
@@ -138,20 +137,22 @@ class _MyHomePageState extends State<MyHomePage> {
               ...menuItems.asMap().entries.map((entry) {
                 int index = entry.key;
                 String title = entry.value["title"];
-                IconData icon = entry.value["icon"];
+                IconData? icon = entry.value["icon"]; // Icon can be null
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (index == 2) ...[
+                    if (title == "GENERAL") ...[
                       const SizedBox(height: 10), // Add gap before GENERAL
                       const Divider(color: Colors.white70), // Divider
                     ],
                     ListTile(
-                      selected: _selectedIndex == index,
+                      selected: _selectedIndex == (index > 2 ? index - 1 : index),
                       selectedTileColor: const Color(0xFF495057), // Highlight color
                       contentPadding:
                           const EdgeInsets.symmetric(horizontal: 16.0),
-                      leading: Icon(icon, color: Colors.white),
+                      leading: icon != null
+                          ? Icon(icon, color: Colors.white)
+                          : null, // Show icon only if available
                       title: Text(
                         title,
                         style: const TextStyle(
