@@ -17,44 +17,41 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('App Usage Stats'),
-        backgroundColor: Colors.green,
+        title: const Text(
+          'Home',
+          style: TextStyle(color: Colors.white), // White text
+        ),
+        backgroundColor: Color(0xFF343A40), // AppBar background
       ),
       drawer: Drawer(
-        backgroundColor: Color(0xFF343A40), 
+        backgroundColor: Color(0xFF343A40), // Drawer background
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Color(0xFF343A40), 
+                color: Color(0xFF343A40), // Drawer header background
               ),
               child: Text(
                 'Slide bar',
                 style: TextStyle(
-                  color: Colors.white, 
+                  color: Colors.white,
                   fontSize: 24,
                 ),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.home, color: Colors.white), 
-              title: Text(
-                'HOME',
-                style: TextStyle(color: Colors.white), 
-              ),
+              leading: Icon(Icons.home, color: Colors.white),
+              title: Text('HOME', style: TextStyle(color: Colors.white)),
               onTap: () {
-                Navigator.pop(context); 
+                Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: Icon(Icons.bar_chart, color: Colors.white), 
-              title: Text(
-                'STATISTICS',
-                style: TextStyle(color: Colors.white), 
-              ),
+              leading: Icon(Icons.bar_chart, color: Colors.white),
+              title: Text('STATISTICS', style: TextStyle(color: Colors.white)),
               onTap: () {
-                Navigator.pop(context); 
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => StatisticsPage()),
@@ -62,13 +59,10 @@ class HomePage extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.settings, color: Colors.white), 
-              title: Text(
-                'SETTINGS',
-                style: TextStyle(color: Colors.white), 
-              ),
+              leading: Icon(Icons.settings, color: Colors.white),
+              title: Text('SETTINGS', style: TextStyle(color: Colors.white)),
               onTap: () {
-                Navigator.pop(context); 
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => SettingsPage()),
@@ -76,23 +70,17 @@ class HomePage extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.info, color: Colors.white), 
-              title: Text(
-                'ABOUT US',
-                style: TextStyle(color: Colors.white), 
-              ),
+              leading: Icon(Icons.info, color: Colors.white),
+              title: Text('ABOUT US', style: TextStyle(color: Colors.white)),
               onTap: () {
-                Navigator.pop(context); 
+                Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: Icon(Icons.logout, color: Colors.white), 
-              title: Text(
-                'LOGOUT',
-                style: TextStyle(color: Colors.white), 
-              ),
+              leading: Icon(Icons.logout, color: Colors.white),
+              title: Text('LOGOUT', style: TextStyle(color: Colors.white)),
               onTap: () {
-                Navigator.pop(context); 
+                Navigator.pop(context);
               },
             ),
           ],
@@ -101,7 +89,7 @@ class HomePage extends StatelessWidget {
       body: Center(
         child: FutureBuilder<List<AppUsageInfo>>(
           future: AppUsage().getAppUsage(
-            DateTime.now().subtract(Duration(days: 1)), // cant go more than 1 day
+            DateTime.now().subtract(Duration(days: 1)), // Last 24 hours
             DateTime.now(),
           ),
           builder: (context, snapshot) {
@@ -112,13 +100,21 @@ class HomePage extends StatelessWidget {
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Text('No usage data available.');
             } else {
-              // Calculate total usage time for the last 24 hours
+              // Calculate total usage time
               int totalSeconds = snapshot.data!
                   .fold(0, (sum, info) => sum + info.usage.inSeconds);
               Duration totalUsage = Duration(seconds: totalSeconds);
-
-              // Format total usage into HH:MM:SS
               String formattedTotalUsage = formatDuration(totalUsage);
+
+              // Display motivational message
+              String motivationalText = '';
+              if (totalUsage.inHours >= 10) {
+                motivationalText =
+                'You could have read a 500-paged book with that time!';
+              } else if (totalUsage.inHours >= 5) {
+                motivationalText =
+                'You could have learned how to solve a Rubik\'s Cube with that time!';
+              }
 
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -133,9 +129,19 @@ class HomePage extends StatelessWidget {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
+                  if (motivationalText.isNotEmpty)
+                    Text(
+                      motivationalText,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.redAccent,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      // Update the app usage data 
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => HomePage()),
@@ -179,41 +185,31 @@ class _StatisticsPageState extends State<StatisticsPage> {
   void getUsageStats() async {
     try {
       DateTime endDate = DateTime.now();
-      DateTime startDate = endDate.subtract(Duration(days: 1)); // Last 24 hours
+      DateTime startDate = endDate.subtract(Duration(days: 1));
       List<AppUsageInfo> infoList =
       await AppUsage().getAppUsage(startDate, endDate);
-
-      // Sort apps by usage in descending order
       infoList.sort((a, b) => b.usage.inSeconds.compareTo(a.usage.inSeconds));
-
       setState(() => _infos = infoList);
-
-      for (var info in infoList) {
-        print(info.toString());
-      }
     } on AppUsageException catch (exception) {
       print(exception);
     }
   }
 
-  /// Helper method to format Duration into HH:MM:SS
   String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String hours = twoDigits(duration.inHours);
     String minutes = twoDigits(duration.inMinutes.remainder(60));
-    String seconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$hours:$minutes:$seconds";
+    return "$hours:$minutes";
   }
 
   @override
   Widget build(BuildContext context) {
-    // Determine which apps to display based on _showAll
     List<AppUsageInfo> appsToShow = _showAll ? _infos : _infos.take(3).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('App Usage Statistics'),
-        backgroundColor: Colors.green,
+        title: Text('App Usage Statistics', style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF343A40),
       ),
       body: Column(
         children: [
@@ -228,12 +224,10 @@ class _StatisticsPageState extends State<StatisticsPage> {
               },
             ),
           ),
-          if (_infos.length > 3) 
+          if (_infos.length > 3)
             TextButton(
               onPressed: () {
-                setState(() {
-                  _showAll = !_showAll;
-                });
+                setState(() => _showAll = !_showAll);
               },
               child: Text(
                 _showAll ? 'Collapse' : 'Show All',
@@ -253,7 +247,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   List<AppUsageInfo> _allApps = [];
-  List<AppUsageInfo> _removedApps = [];
 
   @override
   void initState() {
@@ -264,7 +257,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void getAllAppStats() async {
     try {
       DateTime endDate = DateTime.now();
-      DateTime startDate = endDate.subtract(Duration(days: 1)); // Last 24 hours
+      DateTime startDate = endDate.subtract(Duration(days: 1));
       List<AppUsageInfo> appStats =
       await AppUsage().getAppUsage(startDate, endDate);
 
@@ -279,7 +272,6 @@ class _SettingsPageState extends State<SettingsPage> {
   void removeApp(AppUsageInfo app) {
     setState(() {
       _allApps.remove(app);
-      _removedApps.add(app);
     });
   }
 
@@ -287,8 +279,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
-        backgroundColor: Colors.green,
+        title: Text('Settings', style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF343A40),
       ),
       body: ListView.builder(
         itemCount: _allApps.length,
